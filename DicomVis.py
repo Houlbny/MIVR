@@ -76,6 +76,7 @@ class DicomVis(VisuAnalysisWidget):
         #self.volumeMapper.SetVolumeRayCastFunction(self.rayCastFunction)
         self.volumeMapper = vtk.vtkGPUVolumeRayCastMapper()
 
+
         volumeColor = vtk.vtkColorTransferFunction()
         volumeColor.AddRGBPoint(0,    0.0, 0.0, 0.0)
         volumeColor.AddRGBPoint(500,  1.0, 0.5, 0.3)
@@ -84,8 +85,8 @@ class DicomVis(VisuAnalysisWidget):
         self.volumeColor = volumeColor
 
         volumeScalarOpacity = vtk.vtkPiecewiseFunction()
-        volumeScalarOpacity.AddPoint(0,    0.00)
-        volumeScalarOpacity.AddPoint(50,  0.15)
+        volumeScalarOpacity.AddPoint(0, 0.00)
+        volumeScalarOpacity.AddPoint(50, 0.15)
         volumeScalarOpacity.AddPoint(100, 0.15)
         volumeScalarOpacity.AddPoint(115, 0.85)
         self.volumeScalarOpacity = volumeScalarOpacity

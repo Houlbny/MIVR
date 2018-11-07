@@ -18,7 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.verticalLayout.insertWidget(0, self.dicomVisWidget)
 
-        studypath = ''
+        #studypath = ''
         #self.dicomVisWidget.load_study_from_path(studypath)
 
     def closeEvent(self, event):
