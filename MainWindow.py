@@ -39,14 +39,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_loadStudyBtn_clicked(self):
-        dicompath = str(QtWidgets.QFileDialog.getExistingDirectory(None, "Open Directory", "/home", QtWidgets.QFileDialog.ShowDirsOnly))
-        try:
-            self.dicomVisWidget.load_study_from_path(dicompath)
+        #dicompath = str(QtWidgets.QFileDialog.getExistingDirectory(None, "Open Directory", "/home", QtWidgets.QFileDialog.ShowDirsOnly))
 
+        self.dicomVisWidget.load_study_from_path('./17/17_clean2.nrrd')
+
+        '''
         except:
             infobox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", "Something went wrong")
             infobox.exec_()
+        '''
 
+        '''
         self.opened_list.append(dicompath.split('/')[-1])
         self.model = QtGui.QStandardItemModel()
         for file in self.opened_list:
@@ -55,6 +58,7 @@ class MainWindow(QtWidgets.QMainWindow):
             item.setCheckable(True)
             self.model.appendRow(item)
             self.dicomVisWidget.ui.opened_view.setModel(self.model)
+        '''
 
     @QtCore.pyqtSlot()
     def on_actionAbout_triggered(self):

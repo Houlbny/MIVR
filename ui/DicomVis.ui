@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1239</width>
+    <width>1237</width>
     <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>DICOM Visualizer</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,0">
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
      <property name="sizeConstraint">
@@ -31,7 +31,7 @@
      <item row="0" column="0">
       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
        <property name="spacing">
-        <number>6</number>
+        <number>-1</number>
        </property>
        <item>
         <widget class="QLabel" name="label_XY_slice">
@@ -95,39 +95,33 @@
       </layout>
      </item>
      <item row="1" column="1">
-      <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,1">
+      <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,1,0">
        <item>
         <widget class="QLabel" name="label_Volume">
          <property name="text">
-          <string>Volume render</string>
+          <string>Segmentation Result</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QVTKWidget" name="VolumeWidget" native="true"/>
        </item>
+       <item>
+        <widget class="QSlider" name="SegmentSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0" columnstretch="0,0,0">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0" columnstretch="0,0,0">
      <property name="sizeConstraint">
       <enum>QLayout::SetDefaultConstraint</enum>
      </property>
-     <item row="1" column="2">
-      <widget class="QLabel" name="window_center_num">
-       <property name="minimumSize">
-        <size>
-         <width>45</width>
-         <height>22</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
      <item row="2" column="1">
       <widget class="QSlider" name="WindowWidthSlider">
        <property name="minimumSize">
@@ -144,6 +138,22 @@
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="window_center_num">
+       <property name="minimumSize">
+        <size>
+         <width>45</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -180,19 +190,6 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item row="2" column="2">
       <widget class="QLabel" name="window_width_num">
        <property name="minimumSize">
@@ -204,9 +201,57 @@
        <property name="text">
         <string>0</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
       </widget>
      </item>
-     <item row="3" column="1" colspan="2">
+     <item row="3" column="0">
+      <widget class="QComboBox" name="seg_method">
+       <item>
+        <property name="text">
+         <string>红色标识</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>绿色标识</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>蓝色标识</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="comboBox_2">
+       <item>
+        <property name="text">
+         <string>深度神经网络-3DUnet</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>快速分割</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>交互式分割</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="choose_check">
+       <property name="text">
+        <string>确定</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="3">
       <widget class="QListView" name="opened_view"/>
      </item>
     </layout>

@@ -25,10 +25,17 @@
       <item>
        <widget class="QPushButton" name="loadStudyBtn">
         <property name="text">
-         <string>Load Dicom Data</string>
+         <string>载入数据</string>
         </property>
         <property name="flat">
          <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="runSeg">
+        <property name="text">
+         <string>运行分割算法</string>
         </property>
        </widget>
       </item>

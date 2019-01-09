@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 
 import vtk
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -21,10 +21,12 @@ class DicomVis(VisuAnalysisWidget):
 
     def __init__(self, parent = None):
 
-        self.reader = vtk.vtkDICOMImageReader()
+        self.reader = vtk.vtkNrrdReader()
+
         self.dataExtent = []
         self.dataDimensions = []
         self.dataRange = ()
+
 
         # initialize GUI
         QtWidgets.QWidget.__init__(self, parent)
@@ -32,38 +34,33 @@ class DicomVis(VisuAnalysisWidget):
         self.ui.setupUi(self)
         self.ui.WindowCenterSlider.setRange(0, 1000)
         self.ui.WindowWidthSlider.setRange(0, 1000)
-        '''
-        opened_list = [u'文件5']
-        self.model = QtGui.QStandardItemModel()
-        for file in opened_list:
-            item = QtGui.QStandardItem(file)
-            item.setCheckState(False)
-            item.setCheckable(True)
-            self.model.appendRow(item)
-            self.ui.opened_view.setModel(self.model)
-        '''
 
         # define viewers
         [self.viewerXY, self.viewerYZ, self.viewerXZ] = [vtk.vtkImageViewer2() for x in range(3)]
+        [self.viewerXY2, self.viewerYZ2, self.viewerXZ2] = [vtk.vtkImageViewer2() for x in range(3)]
 
         # attach interactors to viewers
         self.viewerXY.SetupInteractor(self.ui.XYPlaneWidget)
         self.viewerYZ.SetupInteractor(self.ui.YZPlaneWidget)
         self.viewerXZ.SetupInteractor(self.ui.XZPlaneWidget)
 
+        self.colorTable = vtk.vtkLookupTable()
+        self.colorTable.SetNumberOfColors(1)
+        self.colorTable.SetTableValue(0, 0, 1, 0, 1)
+        self.colorTable.Build()
+        self.colorMap = vtk.vtkImageMapToColors()
+
+
         # set render windows for viewers
         self.viewerXY.SetRenderWindow(self.ui.XYPlaneWidget.GetRenderWindow())
         self.viewerYZ.SetRenderWindow(self.ui.YZPlaneWidget.GetRenderWindow())
         self.viewerXZ.SetRenderWindow(self.ui.XZPlaneWidget.GetRenderWindow())
-
         # set slicing orientation for viewers
         self.viewerXY.SetSliceOrientationToXZ()
         self.viewerYZ.SetSliceOrientationToYZ()
         self.viewerXZ.SetSliceOrientationToXY()
 
-        # rotate image
-        act = self.viewerYZ.GetImageActor()
-        act.SetOrientation(90, 0, 0)
+
 
         # setup volume rendering
         self.volRender = vtk.vtkRenderer()
@@ -112,8 +109,8 @@ class DicomVis(VisuAnalysisWidget):
         volume.SetMapper(self.volumeMapper)
         volume.SetProperty(self.volumeProperty)
         self.volume = volume
-
         self.volRender.AddViewProp(volume)
+
 
 
         width_bar = self.ui.WindowWidthSlider
@@ -132,16 +129,73 @@ class DicomVis(VisuAnalysisWidget):
         self.load_study_from_path(studydata.getPath())
 
 
-    def load_study_from_path(self, studyPath):
 
+
+    def load_ROI_from_path(self,ROIpath):
         # Update reader
-        self.reader.SetDirectoryName(studyPath)
+        self.reader.SetFileName(ROIpath)
         self.reader.Update()
 
-        self.xyMapper = vtk.vtk
+        self.colorMap.SetInputConnection(self.reader.GetOutputPort())
+        self.colorMap.SetLookupTable(self.colorTable)
+        self.colorMap.Update()
+
+        print(self.reader.GetOutput())
 
         # Get data dimensionality
         self.dataExtent = self.reader.GetDataExtent()
+        print(self.dataExtent)
+        dataDimensionX = self.dataExtent[1] - self.dataExtent[0]
+        dataDimensionY = self.dataExtent[3] - self.dataExtent[2]
+        dataDimensionZ = self.dataExtent[5] - self.dataExtent[4]
+        self.dataDimensions = [dataDimensionX, dataDimensionY, dataDimensionZ]
+
+        # Calculate index of middle slice
+        midslice1 = int((self.dataExtent[1] - self.dataExtent[0]) / 2 + self.dataExtent[0])
+        midslice2 = int((self.dataExtent[3] - self.dataExtent[2]) / 2 + self.dataExtent[2])
+        midslice3 = int((self.dataExtent[5] - self.dataExtent[4]) / 2 + self.dataExtent[4])
+
+        # Calculate enter
+        center = [midslice1, midslice2, midslice3]
+
+        # Get data range
+        self.dataRange = self.reader.GetOutput().GetPointData().GetArray(0).GetRange()
+        print(self.dataRange)
+
+        # Set current slice to the middle one
+        for pair in zip([self.viewerXY, self.viewerYZ, self.viewerXZ], [midslice1, midslice2, midslice3]):
+            pair[0].SetInputData(self.reader.GetOutput())
+            pair[0].SetSlice(pair[1])
+            pair[0].Render()
+        pass
+
+        # Set range and proper value for slice sliders
+        for pair in zip([self.ui.XYSlider, self.ui.YZSlider, self.ui.XZSlider, ], self.dataDimensions,
+                        [midslice1, midslice2, midslice3]):
+            pair[0].setRange(0, pair[1])
+            pair[0].setValue(pair[2])
+
+        # Set range and value for windowing sliders
+        self.ui.WindowCenterSlider.setRange(int(self.dataRange[0]), int(self.dataRange[1]))
+        self.ui.WindowWidthSlider.setRange(1, int(self.dataRange[1]))
+
+        # set input for volume renderer
+        self.volumeMapper.SetInputConnection(self.reader.GetOutputPort())
+        self.volRenWin.Render()
+
+
+
+    def load_study_from_path(self, studyPath):
+
+        # Update reader
+        self.reader.SetFileName(studyPath)
+        self.reader.Update()
+        print(self.reader.GetOutput())
+
+
+        # Get data dimensionality
+        self.dataExtent = self.reader.GetDataExtent()
+        print(self.dataExtent)
         dataDimensionX = self.dataExtent[1]-self.dataExtent[0]
         dataDimensionY = self.dataExtent[3]-self.dataExtent[2]
         dataDimensionZ = self.dataExtent[5]-self.dataExtent[4]
@@ -159,6 +213,8 @@ class DicomVis(VisuAnalysisWidget):
         self.dataRange = self.reader.GetOutput().GetPointData().GetArray(0).GetRange()
         print(self.dataRange)
 
+
+
         # Set current slice to the middle one
         for pair in zip([self.viewerXY, self.viewerYZ, self.viewerXZ], [midslice1, midslice2, midslice3]):
             pair[0].SetInputData(self.reader.GetOutput())
@@ -166,18 +222,22 @@ class DicomVis(VisuAnalysisWidget):
             pair[0].Render()
         pass
 
+
         # Set range and proper value for slice sliders
         for pair in zip([self.ui.XYSlider, self.ui.YZSlider, self.ui.XZSlider,], self.dataDimensions, [midslice1, midslice2, midslice3]):
             pair[0].setRange(0, pair[1])
             pair[0].setValue(pair[2])
 
+
         # Set range and value for windowing sliders
         self.ui.WindowCenterSlider.setRange(int(self.dataRange[0]), int(self.dataRange[1]))
         self.ui.WindowWidthSlider.setRange(1, int(self.dataRange[1]))
 
+
         # set input for volume renderer
         self.volumeMapper.SetInputConnection(self.reader.GetOutputPort())
         self.volRenWin.Render()
+
 
 
     # setup slots for slicing sliders
@@ -207,6 +267,17 @@ class DicomVis(VisuAnalysisWidget):
             x.SetColorWindow(value)
             x.Render()
 
+    @QtCore.pyqtSlot()
+    def on_checkBtn_clicked(self):
+        #ROIpath = str(QtWidgets.QFileDialog.getExistingDirectory(None, "Open Directory", "/home", QtWidgets.QFileDialog.ShowDirsOnly))
+
+        ROIpath = './17/tttmerge.nrrd'
+        self.load_ROI_from_path(ROIpath)
+        '''
+        except:
+            infobox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Error", "Something went wrong")
+            infobox.exec_()
+        '''
 
 if __name__ == "__main__":
     import sys
